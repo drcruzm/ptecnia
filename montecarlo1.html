@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClaseADD: Tutorial de Simulación Monte Carlo</title>
+    <title>ClaseADD: Masterclass de Simulación Monte Carlo</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -11,6 +11,7 @@
             --accent-color: #e67e22;
             --bg-color: #f4f7f6;
             --text-color: #333;
+            --code-bg: #272822;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,10 +22,11 @@
             padding: 0;
         }
         header {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), #1a252f);
             color: white;
-            padding: 2.5rem 0;
+            padding: 3rem 0;
             text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
         nav {
             background: #fff;
@@ -40,31 +42,55 @@
             margin: 0;
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
         }
-        nav li { margin: 0 15px; }
+        nav li { margin: 0 15px; position: relative; }
         nav a {
             text-decoration: none;
             color: var(--primary-color);
             font-weight: bold;
+            transition: color 0.3s;
         }
+        nav a:hover { color: var(--secondary-color); }
+        
+        /* Submenú */
+        nav li ul {
+            display: none;
+            position: absolute;
+            background: #fff;
+            top: 100%;
+            left: 0;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            min-width: 220px;
+            border-radius: 0 0 5px 5px;
+        }
+        nav li:hover ul { display: block; }
+        nav li ul li { margin: 5px 0; display: block; width: 100%; }
+
         .container {
             max-width: 1000px;
             margin: 20px auto;
             background: white;
             padding: 40px;
             border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
         }
-        /* Contenedor Responsivo para Iframe */
+        section { margin-bottom: 50px; scroll-margin-top: 80px; }
+        h2 { border-left: 6px solid var(--secondary-color); padding-left: 15px; color: var(--primary-color); text-transform: uppercase; letter-spacing: 1px; }
+        h3 { color: var(--secondary-color); margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        
+        /* Estilos Iframe */
         .iframe-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* Relación 16:9 */
+            padding-bottom: 56.25%; /* 16:9 */
             height: 0;
             overflow: hidden;
             max-width: 100%;
             background: #000;
             margin: 30px 0;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .iframe-wrapper iframe {
             position: absolute;
@@ -74,53 +100,76 @@
             height: 100%;
             border: 0;
         }
+
         .code-block {
-            background: #272822;
+            background: var(--code-bg);
             color: #f8f8f2;
             padding: 20px;
-            border-radius: 5px;
-            font-family: 'Courier New', monospace;
+            border-radius: 6px;
+            font-family: 'Consolas', 'monaco', monospace;
+            overflow-x: auto;
             margin: 15px 0;
+            border: 1px solid #444;
         }
         .formula {
             background: #eef7ff;
-            padding: 15px;
+            padding: 20px;
             border-left: 4px solid var(--accent-color);
-            margin: 15px 0;
+            font-style: italic;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
         }
+        .highlight { color: var(--accent-color); font-weight: bold; }
+        
         footer {
             text-align: center;
-            padding: 30px;
-            background: #eee;
-            margin-top: 40px;
+            padding: 40px;
+            font-size: 0.9rem;
+            color: #ecf0f1;
+            background: var(--primary-color);
+            margin-top: 50px;
         }
+        footer a { color: var(--secondary-color); text-decoration: none; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>ClaseADD: Análisis de Datos Avanzado</h1>
-    <p>Capítulo 1: Simulación Monte Carlo</p>
+    <h1>ClaseADD: Ingeniería de Decisiones</h1>
+    <p>Capítulo 1: Fundamentos y Construcción del Modelo de Monte Carlo</p>
 </header>
 
 <nav>
     <ul>
         <li><a href="#intro">Introducción</a></li>
-        <li><a href="#demo">Caso Práctico</a></li>
-        <li><a href="#pasos">Construcción</a></li>
+        <li><a href="#demo">Caso Interactivo</a></li>
+        <li><a href="#requisitos">Requisitos</a>
+            <ul>
+                <li><a href="#soft">Software y Herramientas</a></li>
+                <li><a href="#teoria">Fundamentos Teóricos</a></li>
+            </ul>
+        </li>
+        <li><a href="#pasos">Pasos de Construcción</a>
+            <ul>
+                <li><a href="#paso1">1. Generación Aleatoria</a></li>
+                <li><a href="#paso2">2. Métricas Estadísticas</a></li>
+                <li><a href="#paso3">3. Iteración Masiva</a></li>
+            </ul>
+        </li>
+        <li><a href="#conclusion">Conclusión</a></li>
     </ul>
 </nav>
 
 <div class="container">
     <section id="intro">
-        <h2>Introducción</h2>
-        <p>La <strong>Simulación de Monte Carlo</strong> permite proyectar miles de escenarios posibles para entender la variabilidad de un modelo. Es fundamental en la gestión de riesgos financieros y operativos.</p>
+        <h2>Introducción al Método Monte Carlo</h2>
+        <p>La <strong>Simulación de Monte Carlo</strong> es una metodología técnica diseñada para resolver problemas mediante el uso de variables aleatorias. Fue bautizada así en la década de 1940 por científicos del Proyecto Manhattan, quienes utilizaron el azar para predecir el comportamiento de neutrones en reacciones nucleares.</p>
+        <p>En el análisis de datos moderno, aplicamos este método para <span class="highlight">transformar modelos deterministas en modelos estocásticos</span>, permitiéndonos visualizar no solo un resultado, sino todo el espectro de posibilidades.</p>
     </section>
 
     <section id="demo">
-        <h2>Visualización Interactiva: Ahorro de Jubilación</h2>
-        <p>Si el contenido no carga, asegúrese de tener conexión a internet y que su navegador no bloquee scripts externos.</p>
-        
+        <h2>Caso Práctico: Monte Carlo en Ahorro de Jubilación</h2>
+        <p>Para comprender la profundidad técnica, analicemos cómo la variabilidad del mercado afecta una meta financiera a largo plazo. Utilice la siguiente presentación interactiva para explorar los escenarios:</p>
         <div class="iframe-wrapper">
             <iframe 
                 src="https://gamma.app/embed/3cqmkvmetn4neyc" 
@@ -131,20 +180,73 @@
         </div>
     </section>
 
+    <section id="requisitos">
+        <h2>Requisitos de Arquitectura</h2>
+        <article id="soft">
+            <h3>Herramientas Técnicas</h3>
+            <ul>
+                <li><strong>Microsoft Excel:</strong> Motor de cálculo matricial.</li>
+                <li><strong>Funciones Lógicas:</strong> Implementación de condicionales para el flujo de datos.</li>
+                <li><strong>Capacidad de Recálculo:</strong> Uso de la tecla <code>F9</code> para forzar la regeneración de números volátiles.</li>
+            </ul>
+        </article>
+        <article id="teoria">
+            <h3>Fundamento Matemático</h3>
+            <p>El núcleo del sistema es la función <span class="highlight">RAND()</span> (o ALEATORIO()). Esta función genera una distribución uniforme, lo que significa que cada número entre 0 y 1 tiene exactamente la misma probabilidad de aparecer, sirviendo como el "motor de azar" de nuestro modelo.</p>
+        </article>
+    </section>
+
     <section id="pasos">
-        <h2>Pasos Técnicos de Construcción</h2>
-        <div class="formula">
-            <strong>Fórmula Base de Variabilidad:</strong> Genera un paso positivo o negativo con 50% de probabilidad.
-        </div>
-        <div class="code-block">
-            =IF(RAND() > 0.5, 1, -1)
-        </div>
-        <p>Este motor de cálculo se integra en una <strong>Tabla de Datos</strong> de Excel para ejecutar miles de iteraciones simultáneas.</p>
+        <h2>Pasos de Construcción del Modelo</h2>
+        
+        <article id="paso1">
+            <h3>1. Generación de la Caminata Aleatoria (Random Walk)</h3>
+            <p>El primer paso es crear un evento individual. Definimos un punto de origen (cero) y establecemos que en cada paso el sistema debe decidir entre un resultado binario (Ganancia/Pérdida).</p>
+            <div class="formula">
+                <strong>¿Por qué > 0.5?</strong> Al ser una distribución uniforme, el 50% de los números generados estarán por encima de 0.5, asegurando un modelo de azar equilibrado.
+            </div>
+            <div class="code-block">
+                =IF(RAND() > 0.5, 1, -1)
+            </div>
+            <p>Este proceso se replica en 1,000 celdas para simular un historial completo de eventos consecutivos.</p>
+        </article>
+
+        <article id="paso2">
+            <h3>2. Métricas Estadísticas y de Control</h3>
+            <p>Una vez generada la serie de datos, el analista debe extraer significado de la volatilidad. Implementamos métricas clave:</p>
+            <ul>
+                <li><strong>Promedio (Tendencia):</strong> <code>=AVERAGE(Rango)</code> - Revela hacia dónde gravita el modelo.</li>
+                <li><strong>Límites (Riesgo):</strong> <code>=MIN()</code> y <code>=MAX()</code> - Identifican los peores y mejores escenarios posibles en esa ejecución.</li>
+                <li><strong>Volatilidad:</strong> <code>=STDEV()</code> - Cuantifica qué tan impredecible es el comportamiento de los datos.</li>
+            </ul>
+        </article>
+
+        <article id="paso3">
+            <h3>3. Iteración Masiva (Tablas de Datos)</h3>
+            <p>El verdadero poder de Monte Carlo surge al repetir el experimento miles de veces. Para evitar la carga manual, utilizamos la herramienta <strong>Data Table</strong> de Excel.</p>
+            <ol>
+                <li>Creamos una columna de índices (del 1 al 20, o hasta 1,000).</li>
+                <li>Vinculamos la cabecera de la tabla a nuestro resultado final.</li>
+                <li>En el menú <em>Data > What-If Analysis</em>, seleccionamos una "Celda de entrada de columna" vacía.</li>
+            </ol>
+            <div class="code-block">
+                // Resultado generado por Excel (Fórmula de matriz)
+                {=TABLE(, Celda_Vacia)}
+            </div>
+            <p>Esto fuerza a Excel a re-ejecutar las 1,000 funciones RAND() por cada fila de la tabla, creando un universo de miles de realidades alternativas en segundos.</p>
+        </article>
+    </section>
+
+    <section id="conclusion">
+        <h2>Conclusión y Mejores Prácticas</h2>
+        <p>Hemos transformado un simple cálculo de "ganar o perder" en un sistema complejo de gestión de riesgos. El análisis de Monte Carlo nos enseña que **el riesgo no es un número único, sino una distribución de probabilidades**.</p>
+        <p>Para elevar este modelo, ClaseADD recomienda el uso de <strong>Formato Condicional</strong> para resaltar rachas negativas y el uso de histogramas para visualizar la campana de resultados final.</p>
     </section>
 </div>
 
 <footer>
-    <p>&copy; 2026 ClaseADD - Documentación Técnica</p>
+    <p>&copy; 2024 <strong>ClaseADD</strong> - Formación de Alto Nivel en Análisis de Datos</p>
+    <p>Basado en la metodología del Dr. Gerard Verschuuren | <a href="http://www.youtube.com/watch?v=UeGncSFijUM" target="_blank">Ver Video Original</a></p>
 </footer>
 
 </body>
