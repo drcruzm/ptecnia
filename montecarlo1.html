@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClaseADD: Tutorial de Simulación Monte Carlo</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e67e22;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background: var(--primary-color);
+            color: white;
+            padding: 2.5rem 0;
+            text-align: center;
+        }
+        nav {
+            background: #fff;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav li { margin: 0 15px; }
+        nav a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+        }
+        /* Contenedor Responsivo para Iframe */
+        .iframe-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* Relación 16:9 */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            margin: 30px 0;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .code-block {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+        }
+        .formula {
+            background: #eef7ff;
+            padding: 15px;
+            border-left: 4px solid var(--accent-color);
+            margin: 15px 0;
+        }
+        footer {
+            text-align: center;
+            padding: 30px;
+            background: #eee;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ClaseADD: Análisis de Datos Avanzado</h1>
+    <p>Capítulo 1: Simulación Monte Carlo</p>
+</header>
+
+<nav>
+    <ul>
+        <li><a href="#intro">Introducción</a></li>
+        <li><a href="#demo">Caso Práctico</a></li>
+        <li><a href="#pasos">Construcción</a></li>
+    </ul>
+</nav>
+
+<div class="container">
+    <section id="intro">
+        <h2>Introducción</h2>
+        <p>La <strong>Simulación de Monte Carlo</strong> permite proyectar miles de escenarios posibles para entender la variabilidad de un modelo. Es fundamental en la gestión de riesgos financieros y operativos.</p>
+    </section>
+
+    <section id="demo">
+        <h2>Visualización Interactiva: Ahorro de Jubilación</h2>
+        <p>Si el contenido no carga, asegúrese de tener conexión a internet y que su navegador no bloquee scripts externos.</p>
+        
+        <div class="iframe-wrapper">
+            <iframe 
+                src="https://gamma.app/embed/3cqmkvmetn4neyc" 
+                allow="fullscreen; autoplay" 
+                loading="lazy"
+                title="Montecarlo Ahorro de Jubilación">
+            </iframe>
+        </div>
+    </section>
+
+    <section id="pasos">
+        <h2>Pasos Técnicos de Construcción</h2>
+        <div class="formula">
+            <strong>Fórmula Base de Variabilidad:</strong> Genera un paso positivo o negativo con 50% de probabilidad.
+        </div>
+        <div class="code-block">
+            =IF(RAND() > 0.5, 1, -1)
+        </div>
+        <p>Este motor de cálculo se integra en una <strong>Tabla de Datos</strong> de Excel para ejecutar miles de iteraciones simultáneas.</p>
+    </section>
+</div>
+
+<footer>
+    <p>&copy; 2026 ClaseADD - Documentación Técnica</p>
+</footer>
+
+</body>
+</html>
