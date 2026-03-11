@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Montecarlo: Vendedor de Periódicos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-6 text-slate-800">
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Encabezado -->
+        <div class="bg-orange-600 p-6 text-white">
+            <h1 class="text-3xl font-bold mb-2">Simulación: El Vendedor de Periódicos</h1>
+            <p class="text-orange-100">Problema clásico de inventario estocástico (Newsboy Problem) simulado a 365 días.</p>
+        </div>
+
+        <div class="p-6">
+            <!-- Enunciado y Guía de Solución -->
+            <div class="mb-8 bg-orange-50 p-6 rounded-lg border border-orange-100 shadow-sm">
+                <h2 class="text-xl font-bold text-orange-900 mb-2">Enunciado del Problema</h2>
+                <p class="text-orange-800 mb-5">
+                    Un vendedor compra periódicos cada mañana a un costo de <strong>$1.00</strong> cada uno y los vende a <strong>$1.50</strong>. Los periódicos que no se venden al final del día pierden todo su valor (se tiran a la basura). La demanda diaria de los clientes es incierta y varía de forma aleatoria <strong>entre 30 y 80 periódicos al día</strong>.<br><br>
+                    <strong>El Reto:</strong> Si el vendedor decide comprar siempre una cantidad fija de periódicos cada mañana, ¿cuál será su ganancia total acumulada al final de un año (365 días)? ¿Cuál es la cantidad de pedido óptima para maximizar la ganancia?
+                </p>
+                <h3 class="text-lg font-bold text-orange-900 mb-2">Guía de Pasos (Método de Montecarlo en Excel)</h3>
+                <ol class="list-decimal list-inside text-orange-800 space-y-2">
+                    <li><strong>Establecer constantes:</strong> En celdas separadas, define el Costo ($1.00), Precio ($1.50) y Cantidad a Pedir (ej. 50).</li>
+                    <li><strong>Aplicar condición aleatoria (Paso discreto):</strong> Para el Día 1, genera la demanda usando la función <code>=ALEATORIO.ENTRE(30, 80)</code>.</li>
+                    <li><strong>Calcular Ventas y Ganancia:</strong> Usa <code>=MIN(Demanda, Cantidad_Pedida)</code> para saber cuántos vendió realmente. Luego calcula la ganancia diaria: <code>(Ventas * Precio) - (Cantidad_Pedida * Costo)</code>.</li>
+                    <li><strong>Expandir la simulación:</strong> Arrastra (o usa Ctrl+Enter) esta fila de fórmulas hacia abajo para simular 365 días continuos.</li>
+                    <li><strong>Múltiples simulaciones:</strong> Suma la ganancia de todo el año. Luego usa una "Tabla de Datos" de Excel referenciando la celda de la Cantidad a Pedir, para probar cómo cambian las ganancias anuales si pide 40, 50, 60 o 70 periódicos.</li>
+                </ol>
+            </div>
+
+            <!-- Controles -->
+            <div class="flex flex-wrap items-center gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div class="flex flex-col">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Cantidad de Pedido Diario</label>
+                    <input type="number" id="orderInput" value="55" min="30" max="80" class="border border-slate-300 rounded px-3 py-2 w-32 text-lg font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                </div>
+                <div class="flex items-end gap-2 h-full pt-4">
+                    <button onclick="runSingleSimulation()" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors">
+                        Simular 1 Año (365 días)
+                    </button>
+                    <button onclick="runMultipleSimulations()" class="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors">
+                        Simular 100 Años
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gráfico -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 relative">
+                <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Evolución de Ganancias Acumuladas (1 Año)</h2>
+                <canvas id="newsboyCanvas" width="800" height="300" class="w-full h-auto bg-white border border-slate-300 rounded"></canvas>
+            </div>
+
+            <!-- Resultados -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
+                    <p class="text-sm text-orange-600 font-bold">Ganancia Total Anual</p>
+                    <p id="statTotal" class="text-3xl font-black text-orange-800">$0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <p class="text-sm text-green-600 font-bold">Ganancia Promedio Diaria</p>
+                    <p id="statAvgDaily" class="text-3xl font-black text-green-800">$0</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <p class="text-sm text-red-600 font-bold">Días con Pérdidas</p>
+                    <p id="statLossDays" class="text-3xl font-black text-red-800">0</p>
+                    <p class="text-xs text-red-500 mt-1">Sobró demasiada mercancía</p>
+                </div>
+                <div class="bg-amber-50 p-4 rounded-lg border border-amber-100">
+                    <p class="text-sm text-amber-600 font-bold">Ganancia Esperada (100 Años)</p>
+                    <p id="statAvgYearly" class="text-3xl font-black text-amber-800">-</p>
+                    <p class="text-xs text-amber-500 mt-1">Promedio por año</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DAYS = 365;
+        const COST = 1.00;
+        const PRICE = 1.50;
+        const MIN_DEMAND = 30;
+        const MAX_DEMAND = 80;
+
+        // Función para simular el ALEATORIO.ENTRE de Excel
+        function randBetween(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function simulateYear(orderQty) {
+            let cumulativeProfit = 0;
+            let history = [0]; // Empezamos en $0 el día 0
+            let daysWithLoss = 0;
+
+            for(let i = 0; i < DAYS; i++) {
+                let demand = randBetween(MIN_DEMAND, MAX_DEMAND);
+                let sold = Math.min(demand, orderQty);
+                
+                let dailyRevenue = sold * PRICE;
+                let dailyCost = orderQty * COST;
+                let dailyProfit = dailyRevenue - dailyCost;
+
+                cumulativeProfit += dailyProfit;
+                history.push(cumulativeProfit);
+
+                if(dailyProfit < 0) {
+                    daysWithLoss++;
+                }
+            }
+            return { history, cumulativeProfit, daysWithLoss };
+        }
+
+        function drawChart(data) {
+            const canvas = document.getElementById('newsboyCanvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const pad = 40;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const min = Math.min(...data, 0); 
+            const max = Math.max(...data, 100); 
+            const range = max - min || 1; // Evitar división por cero
+            
+            // Dibujar línea de $0
+            const zeroY = h - pad - ((0 - min) / range) * (h - pad * 2);
+            ctx.beginPath();
+            ctx.moveTo(pad, zeroY);
+            ctx.lineTo(w - pad, zeroY);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Dibujar trayectoria
+            ctx.beginPath();
+            const stepX = (w - pad * 2) / DAYS;
+            for(let i = 0; i <= DAYS; i++) {
+                const x = pad + i * stepX;
+                const y = h - pad - ((data[i] - min) / range) * (h - pad * 2);
+                if(i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = '#f97316'; // orange-500
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Etiquetas de eje Y simple
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px Arial';
+            ctx.fillText('$' + max.toFixed(0), 5, pad);
+            ctx.fillText('$0', 5, zeroY + 4);
+        }
+
+        function runSingleSimulation() {
+            const orderQty = parseInt(document.getElementById('orderInput').value) || 50;
+            const result = simulateYear(orderQty);
+            
+            drawChart(result.history);
+            
+            const avgDaily = result.cumulativeProfit / DAYS;
+
+            document.getElementById('statTotal').innerText = "$" + result.cumulativeProfit.toFixed(2);
+            document.getElementById('statAvgDaily').innerText = "$" + avgDaily.toFixed(2);
+            document.getElementById('statLossDays').innerText = result.daysWithLoss;
+            document.getElementById('statAvgYearly').innerText = "-";
+        }
+
+        function runMultipleSimulations() {
+            const orderQty = parseInt(document.getElementById('orderInput').value) || 50;
+            let totalYearlyProfits = 0;
+            let lastResult = null;
+            
+            for(let r = 0; r < 100; r++) {
+                const result = simulateYear(orderQty);
+                totalYearlyProfits += result.cumulativeProfit;
+                if(r === 99) lastResult = result;
+            }
+
+            drawChart(lastResult.history);
+
+            const avgYearly = totalYearlyProfits / 100;
+            const avgDaily = lastResult.cumulativeProfit / DAYS;
+
+            document.getElementById('statTotal').innerText = "$" + lastResult.cumulativeProfit.toFixed(2);
+            document.getElementById('statAvgDaily').innerText = "$" + avgDaily.toFixed(2);
+            document.getElementById('statLossDays').innerText = lastResult.daysWithLoss;
+            document.getElementById('statAvgYearly').innerText = "$" + avgYearly.toFixed(2);
+        }
+
+        // Correr una simulación inicial al cargar
+        window.onload = runSingleSimulation;
+    </script>
+</body>
+</html>
