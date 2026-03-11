@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monte Carlo: The Newsboy Problem</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-6 text-slate-800">
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-indigo-600 p-6 text-white">
+            <h1 class="text-3xl font-bold mb-2">Simulation: The Newsboy Problem</h1>
+            <p class="text-indigo-100">The classic stochastic inventory challenge, simulated over 365 days.</p>
+        </div>
+
+        <div class="p-6">
+            <!-- Problem Statement & Guide -->
+            <div class="mb-8 bg-indigo-50 p-6 rounded-lg border border-indigo-100 shadow-sm">
+                <h2 class="text-xl font-bold text-indigo-900 mb-2">Problem Statement</h2>
+                <p class="text-indigo-800 mb-5">
+                    A vendor buys newspapers every morning for <strong>$1.00</strong> each and sells them for <strong>$1.50</strong>. Any newspapers that are not sold by the end of the day lose all their value (they are thrown away). Daily customer demand is uncertain and randomly varies <strong>between 30 and 80 newspapers per day</strong>.<br><br>
+                    <strong>The Challenge:</strong> If the vendor decides to always order a fixed number of newspapers every morning, what will their total profit be at the end of a year (365 days)? What is the optimal order quantity to maximize their long-term profit?
+                </p>
+                <h3 class="text-lg font-bold text-indigo-900 mb-2">Step-by-Step Guide (Excel Monte Carlo Method)</h3>
+                <ol class="list-decimal list-inside text-indigo-800 space-y-2">
+                    <li><strong>Set your constants:</strong> In separate cells, define the Cost ($1.00), Price ($1.50), and Order Quantity (e.g., 50).</li>
+                    <li><strong>Apply a random condition (Discrete step):</strong> For Day 1, generate the daily demand using the function <code>=RANDBETWEEN(30, 80)</code>.</li>
+                    <li><strong>Calculate Sales and Profit:</strong> Use <code>=MIN(Demand, Order_Quantity)</code> to figure out how many were actually sold. Then calculate the daily profit: <code>(Sales * Price) - (Order_Quantity * Cost)</code>.</li>
+                    <li><strong>Expand the simulation:</strong> Drag this row of formulas down (or use Ctrl+Enter) to simulate 365 continuous days.</li>
+                    <li><strong>Multiple simulations:</strong> Sum up the profit for the whole year. Then, use an Excel "Data Table" referencing the Order Quantity cell to test how your annual profits change if you order 40, 50, 60, or 70 newspapers instead.</li>
+                </ol>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-wrap items-center gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div class="flex flex-col">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Daily Order Quantity</label>
+                    <input type="number" id="orderInput" value="55" min="30" max="80" class="border border-slate-300 rounded px-3 py-2 w-32 text-lg font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex items-end gap-2 h-full pt-4">
+                    <button onclick="runSingleSimulation()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors">
+                        Simulate 1 Year (365 days)
+                    </button>
+                    <button onclick="runMultipleSimulations()" class="bg-violet-600 hover:bg-violet-700 text-white font-semibold py-2 px-6 rounded-lg shadow transition-colors">
+                        Simulate 100 Years
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-6 relative">
+                <h2 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">Cumulative Profit Evolution (1 Year)</h2>
+                <canvas id="newsboyCanvas" width="800" height="300" class="w-full h-auto bg-white border border-slate-300 rounded"></canvas>
+            </div>
+
+            <!-- Results -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                    <p class="text-sm text-indigo-600 font-bold">Total Annual Profit</p>
+                    <p id="statTotal" class="text-3xl font-black text-indigo-800">$0</p>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <p class="text-sm text-green-600 font-bold">Average Daily Profit</p>
+                    <p id="statAvgDaily" class="text-3xl font-black text-green-800">$0</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-100">
+                    <p class="text-sm text-red-600 font-bold">Days with Losses</p>
+                    <p id="statLossDays" class="text-3xl font-black text-red-800">0</p>
+                    <p class="text-xs text-red-500 mt-1">Too much leftover stock</p>
+                </div>
+                <div class="bg-violet-50 p-4 rounded-lg border border-violet-100">
+                    <p class="text-sm text-violet-600 font-bold">Expected Profit (100 Yrs)</p>
+                    <p id="statAvgYearly" class="text-3xl font-black text-violet-800">-</p>
+                    <p class="text-xs text-violet-500 mt-1">Average per year</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DAYS = 365;
+        const COST = 1.00;
+        const PRICE = 1.50;
+        const MIN_DEMAND = 30;
+        const MAX_DEMAND = 80;
+
+        // Function to simulate Excel's RANDBETWEEN
+        function randBetween(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function simulateYear(orderQty) {
+            let cumulativeProfit = 0;
+            let history = [0]; // We start at $0 on day 0
+            let daysWithLoss = 0;
+
+            for(let i = 0; i < DAYS; i++) {
+                let demand = randBetween(MIN_DEMAND, MAX_DEMAND);
+                let sold = Math.min(demand, orderQty);
+                
+                let dailyRevenue = sold * PRICE;
+                let dailyCost = orderQty * COST;
+                let dailyProfit = dailyRevenue - dailyCost;
+
+                cumulativeProfit += dailyProfit;
+                history.push(cumulativeProfit);
+
+                if(dailyProfit < 0) {
+                    daysWithLoss++;
+                }
+            }
+            return { history, cumulativeProfit, daysWithLoss };
+        }
+
+        function drawChart(data) {
+            const canvas = document.getElementById('newsboyCanvas');
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const pad = 40;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const min = Math.min(...data, 0); 
+            const max = Math.max(...data, 100); 
+            const range = max - min || 1; // Prevent division by zero
+            
+            // Draw $0 line
+            const zeroY = h - pad - ((0 - min) / range) * (h - pad * 2);
+            ctx.beginPath();
+            ctx.moveTo(pad, zeroY);
+            ctx.lineTo(w - pad, zeroY);
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw profit trajectory
+            ctx.beginPath();
+            const stepX = (w - pad * 2) / DAYS;
+            for(let i = 0; i <= DAYS; i++) {
+                const x = pad + i * stepX;
+                const y = h - pad - ((data[i] - min) / range) * (h - pad * 2);
+                if(i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = '#6366f1'; // indigo-500
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Simple Y-axis labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px Arial';
+            ctx.fillText('$' + max.toFixed(0), 5, pad);
+            ctx.fillText('$0', 5, zeroY + 4);
+        }
+
+        function runSingleSimulation() {
+            const orderQty = parseInt(document.getElementById('orderInput').value) || 50;
+            const result = simulateYear(orderQty);
+            
+            drawChart(result.history);
+            
+            const avgDaily = result.cumulativeProfit / DAYS;
+
+            document.getElementById('statTotal').innerText = "$" + result.cumulativeProfit.toFixed(2);
+            document.getElementById('statAvgDaily').innerText = "$" + avgDaily.toFixed(2);
+            document.getElementById('statLossDays').innerText = result.daysWithLoss;
+            document.getElementById('statAvgYearly').innerText = "-";
+        }
+
+        function runMultipleSimulations() {
+            const orderQty = parseInt(document.getElementById('orderInput').value) || 50;
+            let totalYearlyProfits = 0;
+            let lastResult = null;
+            
+            for(let r = 0; r < 100; r++) {
+                const result = simulateYear(orderQty);
+                totalYearlyProfits += result.cumulativeProfit;
+                if(r === 99) lastResult = result;
+            }
+
+            drawChart(lastResult.history);
+
+            const avgYearly = totalYearlyProfits / 100;
+            const avgDaily = lastResult.cumulativeProfit / DAYS;
+
+            document.getElementById('statTotal').innerText = "$" + lastResult.cumulativeProfit.toFixed(2);
+            document.getElementById('statAvgDaily').innerText = "$" + avgDaily.toFixed(2);
+            document.getElementById('statLossDays').innerText = lastResult.daysWithLoss;
+            document.getElementById('statAvgYearly').innerText = "$" + avgYearly.toFixed(2);
+        }
+
+        // Run an initial simulation on load
+        window.onload = runSingleSimulation;
+    </script>
+</body>
+</html>
